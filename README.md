@@ -1,7 +1,7 @@
 # fauxmo-jellyfish
 A [fauxmo](https://github.com/n8henrie/fauxmo) plugin to control [JellyFish Lighting](https://www.jellyfishlighting.com/).
 
-Enables Amazon Echo (Alexa) control (**on/off** and pattern for one or more zones) of JellyFish Lighting via an emulated Belkin WeMo switch and the JellyFish controller websocket.
+Enables Amazon Echo (Alexa) control (on/off state and pattern for one or more zones) of JellyFish Lighting via an emulated Belkin WeMo switch and the JellyFish controller websocket.
 
 ## Usage
 
