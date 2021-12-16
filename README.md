@@ -1,7 +1,7 @@
 # fauxmo-jellyfish
 A [fauxmo](https://github.com/n8henrie/fauxmo) plugin to control [JellyFish Lighting](https://www.jellyfishlighting.com/).
 
-Enables Amazon Echo (Alexa) control (**on** and **off** for a single zone) of JellyFish Lighting via an emulated Belkin WeMo switch and the JellyFish controller websocket.
+Enables Amazon Echo (Alexa) control (**on** and **off** for one or more zones) of JellyFish Lighting via an emulated Belkin WeMo switch and the JellyFish controller websocket.
 
 ## Usage
 
@@ -10,7 +10,7 @@ Tested on a Raspberry Pi 4 Model B. Setting a static IP for your JellyFish contr
 1. Install Python: `sudo apt-get update && sudo apt-get install python3 python3-pip`
 2. Install Python dependencies: `pip3 install fauxmo websocket-client`
 3. Clone this repo: `git clone https://github.com/Synse/fauxmo-jellyfish.git && cd fauxmo-jellyfish`
-4. Update `config.json` with the plugin `path`, your JellyFish `controller_ip`, and JellyFish `zone_name`
+4. Update `config.json` with the plugin `path`, your JellyFish `controller_ip`, and JellyFish `zone_names`
 5. Start fauxmo: `fauxmo -c config.json`
 6. Say **Alexa discover devices** and wait for discovery to finish
 
