@@ -1,0 +1,107 @@
+"""Fauxmo plugin for controlling JellyFish lighting (on/off only).
+
+The on and off methods send the `toCtlrSet` command to the JellyFish controller
+websocket with a state of `1` or `0` respectively. This logic is based on the
+jellyroll library here: https://github.com/dotchance/jellyroll and documentation
+here: https://github.com/parkerjfl/JellyfishLightingAPIExplorer
+
+Faxumo will fake the current state as the last action sent to the controller.
+
+Example config:
+
+```
+{
+    "FAUXMO": {
+        "ip_address": "auto"
+    },
+    "PLUGINS": {
+        "JellyFishPlugin": {
+            "path": "~/fauxmo-jellyfish/jellyfishplugin.py",
+            "DEVICES": [
+                {
+                    "port": 12300,
+                    "name": "JellyFish Lights",
+                    "controller_ip": "192.168.3.1",
+                    "zone_name": "All Lights"
+                }
+            ]
+        }
+    }
+}
+```
+
+Dependencies:
+    websocket-client
+"""
+from fauxmo.plugins import FauxmoPlugin
+from websocket import create_connection
+
+
+class JellyFishPlugin(FauxmoPlugin):
+    """Fauxmo plugin to interact with a JellyFish lighting controller."""
+
+    def __init__(
+        self,
+        *,
+        port: int,
+        name: str,
+        controller_ip: str = "192.168.3.1",
+        zone_name: str = None,
+    ) -> None:
+        """Initialize an JellyFishPlugin instance.
+
+        Kwargs:
+            name: device name
+            port: Port for Fauxmo to make this device available to Amazon Echo
+
+            controller_ip: IP address of the JellyFish controller
+            zone_name: The zone name to turn on/off
+        """
+        self.controller_ip = controller_ip
+        self.zone_name = zone_name
+
+        super().__init__(name=name, port=port)
+
+    def on(self) -> bool:
+        """Turn on JellyFish lighting zone.
+
+        Returns:
+            True if device seems to have been turned on.
+        """
+        print('Turning on JellyFish lights for zone: %s' % self.zone_name)
+        cmd = '{"cmd":"toCtlrSet","runPattern":{"file":"","data":"","id":"","state":1,"zoneName":["%s"]}}' % self.zone_name
+
+        try:
+            ws = create_connection('ws://%s:9000/ws/' % self.controller_ip)
+            ws.send(cmd)
+            ws.close()
+
+            return True
+        except Exception as e:
+            print('JellyFish controller error: %s' % e)
+
+        return False
+
+    def off(self) -> bool:
+        """Turn off JellyFish lighting zone.
+
+        Returns:
+            True if device seems to have been turned off.
+        """
+        print('Turning off JellyFish lights for zone: %s' % self.zone_name)
+        cmd = '{"cmd":"toCtlrSet","runPattern":{"file":"","data":"","id":"","state":0,"zoneName":["%s"]}}' % self.zone_name
+
+        try:
+            ws = create_connection('ws://%s:9000/ws/' % self.controller_ip)
+            ws.send(cmd)
+            ws.close()
+
+            return True
+        except Exception as e:
+            print('JellyFish controller error: %s' % e)
+
+        return False
+
+    def get_state(self) -> str:
+        """State is faked by fauxmo as the last state sent to the controller."""
+        return super().get_state()

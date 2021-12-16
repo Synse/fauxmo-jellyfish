@@ -1,0 +1,18 @@
+{
+    "FAUXMO": {
+        "ip_address": "auto"
+    },
+    "PLUGINS": {
+        "JellyFishPlugin": {
+            "path": "~/fauxmo-jellyfish/jellyfishplugin.py",
+            "DEVICES": [
+                {
+                    "port": 12300,
+                    "name": "JellyFish Lights",
+                    "controller_ip": "192.168.3.1",
+                    "zone_name": "All Lights"
+                }
+            ]
+        }
+    }
+}
