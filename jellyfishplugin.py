@@ -28,6 +28,7 @@ Example config:
                     "port": 12301,
                     "name": "Garage Lights",
                     "controller_ip": "192.168.3.1",
+                    "pattern": "Holidays/Valentines Day",
                     "zones": ["Front", "Back"]
                 }
             ]
@@ -53,6 +54,7 @@ class JellyFishPlugin(FauxmoPlugin):
         port: int,
         name: str,
         controller_ip: str = "192.168.3.1",
+        pattern: str = "",
         zones: Sequence[str],
     ) -> None:
         """Initialize an JellyFishPlugin instance.
@@ -62,10 +64,12 @@ class JellyFishPlugin(FauxmoPlugin):
             port: Port for Fauxmo to make this device available to Amazon Echo
 
             controller_ip: IP address of the JellyFish controller
+            pattern: The pattern file to use (default is the current pattern)
             zones: The zone name(s) to turn on/off
         """
         print('JellyFishPlugin intialized for device "%s"' % name)
         self.controller_ip = controller_ip
+        self.pattern = pattern
         self.zones = '","'.join(zones)
 
         super().__init__(name=name, port=port)
@@ -76,8 +80,8 @@ class JellyFishPlugin(FauxmoPlugin):
         Returns:
             True if device seems to have been turned on.
         """
-        print('Turning on "%s" for zones ["%s"]' % (self.name, self.zones))
-        cmd = '{"cmd":"toCtlrSet","runPattern":{"file":"","data":"","id":"","state":1,"zoneName":["%s"]}}' % self.zones
+        print('Turning on "%s" with pattern "%s" for zones ["%s"]' % (self.name, self.pattern, self.zones))
+        cmd = '{"cmd":"toCtlrSet","runPattern":{"file":"%s","data":"","id":"","state":1,"zoneName":["%s"]}}' % (self.pattern, self.zones)
 
         try:
             print('  send >> %s' % cmd)
@@ -98,8 +102,8 @@ class JellyFishPlugin(FauxmoPlugin):
         Returns:
             True if device seems to have been turned off.
         """
-        print('Turning off "%s" for zones ["%s"]' % (self.name, self.zones))
-        cmd = '{"cmd":"toCtlrSet","runPattern":{"file":"","data":"","id":"","state":0,"zoneName":["%s"]}}' % self.zones
+        print('Turning off "%s" with pattern "%s" for zones ["%s"]' % (self.name, self.pattern, self.zones))
+        cmd = '{"cmd":"toCtlrSet","runPattern":{"file":"%s","data":"","id":"","state":0,"zoneName":["%s"]}}' % (self.pattern, self.zones)
 
         try:
             print('  send >> %s' % cmd)
