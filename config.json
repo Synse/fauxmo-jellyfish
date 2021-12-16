@@ -10,7 +10,7 @@
                     "port": 12300,
                     "name": "JellyFish Lights",
                     "controller_ip": "192.168.3.1",
-                    "zone_names": ["All Lights"]
+                    "zones": ["All Lights"]
                 }
             ]
         }

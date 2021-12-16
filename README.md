@@ -5,12 +5,12 @@ Enables Amazon Echo (Alexa) control (**on** and **off** for one or more zones) o
 
 ## Usage
 
-Tested on a Raspberry Pi 4 Model B. Setting a static IP for your JellyFish controller and Raspberry Pi is strongly recommended.
+Tested on a Raspberry Pi 4 Model B and JellyFish controller version 020108. Setting a static IP for your JellyFish controller and Raspberry Pi is strongly recommended.
 
 1. Install Python: `sudo apt-get update && sudo apt-get install python3 python3-pip`
 2. Install Python dependencies: `pip3 install fauxmo websocket-client`
 3. Clone this repo: `git clone https://github.com/Synse/fauxmo-jellyfish.git && cd fauxmo-jellyfish`
-4. Update `config.json` with the plugin `path`, your JellyFish `controller_ip`, and JellyFish `zone_names`
+4. Update `config.json` with the plugin `path`, your JellyFish `controller_ip`, and JellyFish `zones`
 5. Start fauxmo: `fauxmo -c config.json`
 6. Say **Alexa discover devices** and wait for discovery to finish
 
