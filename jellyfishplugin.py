@@ -22,7 +22,13 @@ Example config:
                     "port": 12300,
                     "name": "JellyFish Lights",
                     "controller_ip": "192.168.3.1",
-                    "zone_name": "All Lights"
+                    "zone_names": ["All Lights"]
+                },
+                {
+                    "port": 12301,
+                    "name": "Garage Lights",
+                    "controller_ip": "192.168.3.1",
+                    "zone_names": ["Front", "Back"]
                 }
             ]
         }
@@ -34,6 +40,7 @@ Dependencies:
     websocket-client
 """
 from fauxmo.plugins import FauxmoPlugin
+from typing import Sequence
 from websocket import create_connection
 
 
@@ -46,7 +53,7 @@ class JellyFishPlugin(FauxmoPlugin):
         port: int,
         name: str,
         controller_ip: str = "192.168.3.1",
-        zone_name: str = None,
+        zone_names: Sequence[str],
     ) -> None:
         """Initialize an JellyFishPlugin instance.
 
@@ -57,8 +64,9 @@ class JellyFishPlugin(FauxmoPlugin):
             controller_ip: IP address of the JellyFish controller
             zone_name: The zone name to turn on/off
         """
+        print('JellyFishPlugin intialized for device "%s"' % name)
         self.controller_ip = controller_ip
-        self.zone_name = zone_name
+        self.zones = '","'.join(zone_names)
 
         super().__init__(name=name, port=port)
 
@@ -68,12 +76,13 @@ class JellyFishPlugin(FauxmoPlugin):
         Returns:
             True if device seems to have been turned on.
         """
-        print('Turning on JellyFish lights for zone: %s' % self.zone_name)
-        cmd = '{"cmd":"toCtlrSet","runPattern":{"file":"","data":"","id":"","state":1,"zoneName":["%s"]}}' % self.zone_name
+        print('Turning on "%s" for zones ["%s"]' % (self.name, self.zones))
+        cmd = '{"cmd":"toCtlrSet","runPattern":{"file":"","data":"","id":"","state":1,"zoneName":["%s"]}}' % self.zones
 
         try:
             ws = create_connection('ws://%s:9000/ws/' % self.controller_ip)
             ws.send(cmd)
+            print('>> %s' % ws.recv())
             ws.close()
 
             return True
@@ -88,12 +97,13 @@ class JellyFishPlugin(FauxmoPlugin):
         Returns:
             True if device seems to have been turned off.
         """
-        print('Turning off JellyFish lights for zone: %s' % self.zone_name)
-        cmd = '{"cmd":"toCtlrSet","runPattern":{"file":"","data":"","id":"","state":0,"zoneName":["%s"]}}' % self.zone_name
+        print('Turning off "%s" for zones ["%s"]' % (self.name, self.zones))
+        cmd = '{"cmd":"toCtlrSet","runPattern":{"file":"","data":"","id":"","state":0,"zoneName":["%s"]}}' % self.zones
 
         try:
             ws = create_connection('ws://%s:9000/ws/' % self.controller_ip)
             ws.send(cmd)
+            print('>> %s' % ws.recv())
             ws.close()
 
             return True
