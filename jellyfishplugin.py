@@ -28,6 +28,7 @@ Example config:
                     "port": 12301,
                     "name": "Garage Lights",
                     "controller_ip": "192.168.3.1",
+                    "pattern": "Holidays/Valentines Day",
                     "zones": ["Front", "Back"]
                 }
             ]
@@ -40,6 +41,7 @@ Dependencies:
     websocket-client
 """
 from fauxmo.plugins import FauxmoPlugin
+from json import loads
 from typing import Sequence
 from websocket import create_connection
 
@@ -53,6 +55,7 @@ class JellyFishPlugin(FauxmoPlugin):
         port: int,
         name: str,
         controller_ip: str = "192.168.3.1",
+        pattern: str = "",
         zones: Sequence[str],
     ) -> None:
         """Initialize an JellyFishPlugin instance.
@@ -62,10 +65,12 @@ class JellyFishPlugin(FauxmoPlugin):
             port: Port for Fauxmo to make this device available to Amazon Echo
 
             controller_ip: IP address of the JellyFish controller
+            pattern: The pattern file to use (default is the current pattern)
             zones: The zone name(s) to turn on/off
         """
         print('JellyFishPlugin intialized for device "%s"' % name)
         self.controller_ip = controller_ip
+        self.pattern = pattern
         self.zones = '","'.join(zones)
 
         super().__init__(name=name, port=port)
@@ -76,8 +81,9 @@ class JellyFishPlugin(FauxmoPlugin):
         Returns:
             True if device seems to have been turned on.
         """
-        print('Turning on "%s" for zones ["%s"]' % (self.name, self.zones))
-        cmd = '{"cmd":"toCtlrSet","runPattern":{"file":"","data":"","id":"","state":1,"zoneName":["%s"]}}' % self.zones
+        self.validate_pattern()
+        print('Turning on "%s" with pattern "%s" for zones ["%s"]' % (self.name, self.pattern, self.zones))
+        cmd = '{"cmd":"toCtlrSet","runPattern":{"file":"%s","data":"","id":"","state":1,"zoneName":["%s"]}}' % (self.pattern, self.zones)
 
         try:
             print('  send >> %s' % cmd)
@@ -98,8 +104,9 @@ class JellyFishPlugin(FauxmoPlugin):
         Returns:
             True if device seems to have been turned off.
         """
-        print('Turning off "%s" for zones ["%s"]' % (self.name, self.zones))
-        cmd = '{"cmd":"toCtlrSet","runPattern":{"file":"","data":"","id":"","state":0,"zoneName":["%s"]}}' % self.zones
+        self.validate_pattern()
+        print('Turning off "%s" with pattern "%s" for zones ["%s"]' % (self.name, self.pattern, self.zones))
+        cmd = '{"cmd":"toCtlrSet","runPattern":{"file":"%s","data":"","id":"","state":0,"zoneName":["%s"]}}' % (self.pattern, self.zones)
 
         try:
             print('  send >> %s' % cmd)
@@ -117,3 +124,39 @@ class JellyFishPlugin(FauxmoPlugin):
     def get_state(self) -> str:
         """State is faked by fauxmo as the last state sent to the controller."""
         return super().get_state()
+
+    def validate_pattern(self) -> None:
+        """Confirms that the configured pattern is known to the controller.
+
+        If the pattern is not known, override it with "" to avoid locking up the controller.
+        https://github.com/parkerjfl/JellyfishLightingAPIExplorer/issues/2
+        """
+        cmd = '{"cmd":"toCtlrGet","get":[["patternFileList"]]}'
+
+        # empty pattern is always valid
+        if self.pattern == "":
+            return
+
+        # get patterns from the controller
+        try:
+            # print('  send >> %s' % cmd)
+            ws = create_connection('ws://%s:9000/ws/' % self.controller_ip)
+            ws.send(cmd)
+            ws_resp = ws.recv()
+            # print('  recv << %s' % ws_resp)
+            ws.close()
+        except Exception as e:
+            print('JellyFish controller error: %s' % e)
+
+        # convert response to a list and look for the configured pattern
+        try:
+            json = loads(ws_resp).get('patternFileList')
+            valid_patterns = [p.get('folders') + '/' + p.get('name') for p in json if p.get('name')]
+
+            if self.pattern in valid_patterns:
+                return
+        except Exception as e:
+            print('Error parsing JSON from JellyFish controller: %s' % e)
+
+        print('Pattern "%s" is invalid, overriding with ""' % self.pattern)
+        self.pattern = ""
