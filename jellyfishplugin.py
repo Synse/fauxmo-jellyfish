@@ -41,6 +41,7 @@ Dependencies:
     websocket-client
 """
 from fauxmo.plugins import FauxmoPlugin
+from json import loads
 from typing import Sequence
 from websocket import create_connection
 
@@ -80,6 +81,7 @@ class JellyFishPlugin(FauxmoPlugin):
         Returns:
             True if device seems to have been turned on.
         """
+        self.validate_pattern()
         print('Turning on "%s" with pattern "%s" for zones ["%s"]' % (self.name, self.pattern, self.zones))
         cmd = '{"cmd":"toCtlrSet","runPattern":{"file":"%s","data":"","id":"","state":1,"zoneName":["%s"]}}' % (self.pattern, self.zones)
 
@@ -102,6 +104,7 @@ class JellyFishPlugin(FauxmoPlugin):
         Returns:
             True if device seems to have been turned off.
         """
+        self.validate_pattern()
         print('Turning off "%s" with pattern "%s" for zones ["%s"]' % (self.name, self.pattern, self.zones))
         cmd = '{"cmd":"toCtlrSet","runPattern":{"file":"%s","data":"","id":"","state":0,"zoneName":["%s"]}}' % (self.pattern, self.zones)
 
@@ -121,3 +124,39 @@ class JellyFishPlugin(FauxmoPlugin):
     def get_state(self) -> str:
         """State is faked by fauxmo as the last state sent to the controller."""
         return super().get_state()
+
+    def validate_pattern(self) -> None:
+        """Confirms that the configured pattern is known to the controller.
+
+        If the pattern is not known, override it with "" to avoid locking up the controller.
+        https://github.com/parkerjfl/JellyfishLightingAPIExplorer/issues/2
+        """
+        cmd = '{"cmd":"toCtlrGet","get":[["patternFileList"]]}'
+
+        # empty pattern is always valid
+        if self.pattern == "":
+            return
+
+        # get patterns from the controller
+        try:
+            # print('  send >> %s' % cmd)
+            ws = create_connection('ws://%s:9000/ws/' % self.controller_ip)
+            ws.send(cmd)
+            ws_resp = ws.recv()
+            # print('  recv << %s' % ws_resp)
+            ws.close()
+        except Exception as e:
+            print('JellyFish controller error: %s' % e)
+
+        # convert response to a list and look for the configured pattern
+        try:
+            json = loads(ws_resp).get('patternFileList')
+            valid_patterns = [p.get('folders') + '/' + p.get('name') for p in json if p.get('name')]
+
+            if self.pattern in valid_patterns:
+                return
+        except Exception as e:
+            print('Error parsing JSON from JellyFish controller: %s' % e)
+
+        print('Pattern "%s" is invalid, overriding with ""' % self.pattern)
+        self.pattern = ""
