@@ -1,4 +1,4 @@
-"""Fauxmo plugin for controlling JellyFish lighting (on/off only).
+"""Fauxmo plugin for controlling JellyFish lighting.
 
 The on and off methods send the `toCtlrSet` command to the JellyFish controller
 websocket with a state of `1` or `0` respectively. This logic is based on the
@@ -56,7 +56,7 @@ class JellyFishPlugin(FauxmoPlugin):
         name: str,
         controller_ip: str = "192.168.3.1",
         pattern: str = "",
-        zones: Sequence[str],
+        zones: Sequence[str] = "",
     ) -> None:
         """Initialize an JellyFishPlugin instance.
 
@@ -66,7 +66,7 @@ class JellyFishPlugin(FauxmoPlugin):
 
             controller_ip: IP address of the JellyFish controller
             pattern: The pattern file to use (default is the current pattern)
-            zones: The zone name(s) to turn on/off
+            zones: The zone name(s) to turn on/off (default is all zones)
         """
         print('JellyFishPlugin intialized for device "%s"' % name)
         self.controller_ip = controller_ip
@@ -81,6 +81,7 @@ class JellyFishPlugin(FauxmoPlugin):
         Returns:
             True if device seems to have been turned on.
         """
+        self.configure_zones()
         self.validate_pattern()
         print('Turning on "%s" with pattern "%s" for zones ["%s"]' % (self.name, self.pattern, self.zones))
         cmd = '{"cmd":"toCtlrSet","runPattern":{"file":"%s","data":"","id":"","state":1,"zoneName":["%s"]}}' % (self.pattern, self.zones)
@@ -104,6 +105,7 @@ class JellyFishPlugin(FauxmoPlugin):
         Returns:
             True if device seems to have been turned off.
         """
+        self.configure_zones()
         self.validate_pattern()
         print('Turning off "%s" with pattern "%s" for zones ["%s"]' % (self.name, self.pattern, self.zones))
         cmd = '{"cmd":"toCtlrSet","runPattern":{"file":"%s","data":"","id":"","state":0,"zoneName":["%s"]}}' % (self.pattern, self.zones)
@@ -124,6 +126,35 @@ class JellyFishPlugin(FauxmoPlugin):
     def get_state(self) -> str:
         """State is faked by fauxmo as the last state sent to the controller."""
         return super().get_state()
+
+    def configure_zones(self) -> None:
+        """If zones are unconfigured, get all zones from the controller and update the configuration."""
+        cmd = '{"cmd":"toCtlrGet","get":[["zones"]]}'
+
+        # only get zones if unconfigured
+        if self.zones != "":
+            return
+
+        # get zones from the controller
+        try:
+            # print('  send >> %s' % cmd)
+            ws = create_connection('ws://%s:9000/ws/' % self.controller_ip)
+            ws.send(cmd)
+            ws_resp = ws.recv()
+            # print('  recv << %s' % ws_resp)
+            ws.close()
+        except Exception as e:
+            print('JellyFish controller error: %s' % e)
+
+        # parse zone names
+        try:
+            json = loads(ws_resp).get('zones')
+            zones = [z for z in json.keys()]
+        except Exception as e:
+            print('Error parsing JSON from JellyFish controller: %s' % e)
+
+        print('Setting zones to "%s"' % '","'.join(zones))
+        self.zones = '","'.join(zones)
 
     def validate_pattern(self) -> None:
         """Confirms that the configured pattern is known to the controller.
