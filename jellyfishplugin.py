@@ -65,8 +65,8 @@ class JellyFishPlugin(FauxmoPlugin):
             port: Port for Fauxmo to make this device available to Amazon Echo
 
             controller_ip: IP address of the JellyFish controller
-            pattern: The pattern file to use (default is the current pattern)
-            zones: The zone name(s) to turn on/off (default is all zones)
+            pattern: The pattern file to use (optional, default is the current pattern)
+            zones: The zone name(s) to turn on/off (optional, default is all zones)
         """
         print('JellyFishPlugin intialized for device "%s"' % name)
         self.controller_ip = controller_ip
