@@ -5,7 +5,7 @@ Enables Amazon Echo (Alexa) control (on/off state and pattern for one or more zo
 
 ## Usage
 
-Tested on a Raspberry Pi 4 Model B, JellyFish controller version 020108, and fauxmo v0.5.2. Setting a static IP for your JellyFish controller and Raspberry Pi is strongly recommended.
+Tested on a Raspberry Pi 4 Model B, JellyFish controller version 020110, and fauxmo v0.5.2. Setting a static IP for your JellyFish controller and Raspberry Pi is strongly recommended.
 
 1. Install Python: `sudo apt-get update && sudo apt-get install python3 python3-pip`
 2. Install Python dependencies: `pip3 install fauxmo websocket-client`
