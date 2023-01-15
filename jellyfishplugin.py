@@ -79,7 +79,7 @@ class JellyFishPlugin(FauxmoPlugin):
         """Turn on JellyFish lighting zone(s).
 
         Returns:
-            True if device seems to have been turned on.
+            True if device seems to have been turned on, False otherwise.
         """
         self.configure_zones()
         self.validate_pattern()
@@ -103,7 +103,7 @@ class JellyFishPlugin(FauxmoPlugin):
         """Turn off JellyFish lighting zone(s).
 
         Returns:
-            True if device seems to have been turned off.
+            True if device seems to have been turned off, False otherwise.
         """
         self.configure_zones()
         self.validate_pattern()
@@ -132,7 +132,7 @@ class JellyFishPlugin(FauxmoPlugin):
         cmd = '{"cmd":"toCtlrGet","get":[["zones"]]}'
 
         # only get zones if unconfigured
-        if self.zones != "":
+        if self.zones != '':
             return
 
         # get zones from the controller
@@ -165,7 +165,7 @@ class JellyFishPlugin(FauxmoPlugin):
         cmd = '{"cmd":"toCtlrGet","get":[["patternFileList"]]}'
 
         # empty pattern is always valid
-        if self.pattern == "":
+        if self.pattern == '':
             return
 
         # get patterns from the controller
@@ -190,4 +190,4 @@ class JellyFishPlugin(FauxmoPlugin):
             print('Error parsing JSON from JellyFish controller: %s' % e)
 
         print('Pattern "%s" is invalid, overriding with ""' % self.pattern)
-        self.pattern = ""
+        self.pattern = ''
