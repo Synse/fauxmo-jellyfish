@@ -22,3 +22,4 @@ Turn lights on/off with **"Alexa turn on JellyFish Lights"** and **"Alexa turn o
 - https://github.com/dotchance/jellyroll
 - https://github.com/parkerjfl/JellyfishLightingAPIExplorer
 - https://github.com/vinenoobjelly/jellyfishlights-py
+- https://github.com/bdunn44/hass-jellyfish-lighting
