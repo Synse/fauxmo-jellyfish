@@ -42,9 +42,10 @@ Example config:
 Dependencies:
     websocket-client
 """
-from fauxmo.plugins import FauxmoPlugin
 from json import loads
 from typing import Sequence
+
+from fauxmo.plugins import FauxmoPlugin
 from websocket import create_connection
 
 
