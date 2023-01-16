@@ -101,8 +101,8 @@ class JellyFishPlugin(FauxmoPlugin):
             ws.close()
 
             return True
-        except Exception as e:
-            print('JellyFish controller error: %s' % e)
+        except Exception as ex:
+            print('JellyFish controller error: %s' % ex)
 
         return False
 
@@ -126,8 +126,8 @@ class JellyFishPlugin(FauxmoPlugin):
             ws.close()
 
             return True
-        except Exception as e:
-            print('JellyFish controller error: %s' % e)
+        except Exception as ex:
+            print('JellyFish controller error: %s' % ex)
 
         return False
 
@@ -155,8 +155,8 @@ class JellyFishPlugin(FauxmoPlugin):
                 return 'on'
 
             return 'off'
-        except Exception as e:
-            print('JellyFish controller error: %s' % e)
+        except Exception as ex:
+            print('JellyFish controller error: %s' % ex)
 
         return 'unknown'
 
@@ -178,15 +178,15 @@ class JellyFishPlugin(FauxmoPlugin):
             ws_resp = ws.recv()
             # print('  recv << %s' % ws_resp)
             ws.close()
-        except Exception as e:
-            print('JellyFish controller error: %s' % e)
+        except Exception as ex:
+            print('JellyFish controller error: %s' % ex)
 
         # parse zone names
         try:
             json = loads(ws_resp).get('zones')
             zones = json.keys()
-        except Exception as e:
-            print('Error parsing JSON from JellyFish controller: %s' % e)
+        except Exception as ex:
+            print('Error parsing JSON from JellyFish controller: %s' % ex)
 
         print('Setting zones to "%s"' % '","'.join(zones))
         self.zones = '","'.join(zones)
@@ -212,8 +212,8 @@ class JellyFishPlugin(FauxmoPlugin):
             ws_resp = ws.recv()
             # print('  recv << %s' % ws_resp)
             ws.close()
-        except Exception as e:
-            print('JellyFish controller error: %s' % e)
+        except Exception as ex:
+            print('JellyFish controller error: %s' % ex)
 
         # convert response to a list and look for the configured pattern
         try:
@@ -222,8 +222,8 @@ class JellyFishPlugin(FauxmoPlugin):
 
             if self.pattern in valid_patterns:
                 return
-        except Exception as e:
-            print('Error parsing JSON from JellyFish controller: %s' % e)
+        except Exception as ex:
+            print('Error parsing JSON from JellyFish controller: %s' % ex)
 
         print('Pattern "%s" is invalid, overriding with ""' % self.pattern)
         self.pattern = ''
