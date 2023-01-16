@@ -1,11 +1,13 @@
-"""Fauxmo plugin for controlling JellyFish lighting.
+"""
+Fauxmo plugin for controlling JellyFish lighting.
 
 The on and off methods send the `toCtlrSet` command to the JellyFish controller
 websocket with a state of `1` or `0` respectively. This logic is based on the
 jellyroll library here: https://github.com/dotchance/jellyroll and documentation
 here: https://github.com/parkerjfl/JellyfishLightingAPIExplorer
 
-Faxumo will fake the current state as the last action sent to the controller.
+The get_state method determines if any lights are on and returns "on", "off", or
+"unknown" to display the correct state in the Alexa app.
 
 Example config:
 
@@ -47,21 +49,24 @@ from websocket import create_connection
 
 
 class JellyFishPlugin(FauxmoPlugin):
-    """Fauxmo plugin to interact with a JellyFish lighting controller."""
+    """
+    Fauxmo plugin to interact with a JellyFish lighting controller.
+    """
 
     def __init__(
         self,
         *,
         port: int,
         name: str,
-        controller_ip: str = "192.168.3.1",
-        pattern: str = "",
-        zones: Sequence[str] = "",
+        controller_ip: str = '192.168.3.1',
+        pattern: str = '',
+        zones: Sequence[str] = '',
     ) -> None:
-        """Initialize an JellyFishPlugin instance.
+        """
+        Initialize an JellyFishPlugin instance.
 
         Kwargs:
-            name: device name
+            name: The emulated device name
             port: Port for Fauxmo to make this device available to Amazon Echo
 
             controller_ip: IP address of the JellyFish controller
@@ -76,7 +81,8 @@ class JellyFishPlugin(FauxmoPlugin):
         super().__init__(name=name, port=port)
 
     def on(self) -> bool:
-        """Turn on JellyFish lighting zone(s).
+        """
+        Turn on JellyFish lighting zone(s).
 
         Returns:
             True if device seems to have been turned on, False otherwise.
@@ -100,7 +106,8 @@ class JellyFishPlugin(FauxmoPlugin):
         return False
 
     def off(self) -> bool:
-        """Turn off JellyFish lighting zone(s).
+        """
+        Turn off JellyFish lighting zone(s).
 
         Returns:
             True if device seems to have been turned off, False otherwise.
@@ -128,7 +135,7 @@ class JellyFishPlugin(FauxmoPlugin):
         Determines if the lights are on or off.
 
         Returns:
-            "on", "off", or "unknown"
+            "on" if any lights are on, "off" if all lights are off, otherwise "unknown".
         """
         # print('Getting light state')
         cmd = '{"cmd":"toCtlrGet","get":[["ledPower"]]}'
@@ -153,7 +160,9 @@ class JellyFishPlugin(FauxmoPlugin):
         return 'unknown'
 
     def configure_zones(self) -> None:
-        """If zones are unconfigured, get all zones from the controller and update the configuration."""
+        """
+        If zones are unconfigured, get all zones from the controller and update the configuration.
+        """
         cmd = '{"cmd":"toCtlrGet","get":[["zones"]]}'
 
         # only get zones if unconfigured
@@ -182,7 +191,8 @@ class JellyFishPlugin(FauxmoPlugin):
         self.zones = '","'.join(zones)
 
     def validate_pattern(self) -> None:
-        """Confirms that the configured pattern is known to the controller.
+        """
+        Confirms that the configured pattern is known to the controller.
 
         If the pattern is not known, override it with "" to avoid locking up the controller.
         https://github.com/parkerjfl/JellyfishLightingAPIExplorer/issues/2
