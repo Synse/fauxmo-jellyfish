@@ -124,8 +124,33 @@ class JellyFishPlugin(FauxmoPlugin):
         return False
 
     def get_state(self) -> str:
-        """State is faked by fauxmo as the last state sent to the controller."""
-        return super().get_state()
+        """
+        Determines if the lights are on or off.
+
+        Returns:
+            "on", "off", or "unknown"
+        """
+        # print('Getting light state')
+        cmd = '{"cmd":"toCtlrGet","get":[["ledPower"]]}'
+
+        try:
+            # print('  send >> %s' % cmd)
+            ws = create_connection('ws://%s:9000/ws/' % self.controller_ip)
+            ws.send(cmd)
+            ws_resp = ws.recv()
+            # print('  recv << %s' % ws_resp)
+            ws.close()
+
+            # parse response
+            resp = loads(ws_resp)
+            if resp.get('ledPower'):
+                return 'on'
+            else:
+                return 'off'
+        except Exception as e:
+            print('JellyFish controller error: %s' % e)
+
+        return 'unknown'
 
     def configure_zones(self) -> None:
         """If zones are unconfigured, get all zones from the controller and update the configuration."""
