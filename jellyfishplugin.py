@@ -153,8 +153,8 @@ class JellyFishPlugin(FauxmoPlugin):
             resp = loads(ws_resp)
             if resp.get('ledPower'):
                 return 'on'
-            else:
-                return 'off'
+
+            return 'off'
         except Exception as e:
             print('JellyFish controller error: %s' % e)
 
