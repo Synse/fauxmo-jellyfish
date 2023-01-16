@@ -184,7 +184,7 @@ class JellyFishPlugin(FauxmoPlugin):
         # parse zone names
         try:
             json = loads(ws_resp).get('zones')
-            zones = [z for z in json.keys()]
+            zones = json.keys()
         except Exception as e:
             print('Error parsing JSON from JellyFish controller: %s' % e)
 
